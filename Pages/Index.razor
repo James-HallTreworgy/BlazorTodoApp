@@ -1,5 +1,8 @@
 ﻿@page "/"
 @using BlazorTodoApp.Models
+@using Newtonsoft.Json
+
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 
 <div class="todo-container">
     <h1>To-Do App!</h1>
@@ -28,6 +31,12 @@
 {
     public string todoInput { get; set; }
     public List<Todo> todos = new List<Todo>();
+    private const string TodoStorageKey = "SavedTodos";
+
+    protected override async Task OnInitializedAsync()
+    {
+        todos = await GetStoredTodos();
+    }
 
     public void AddTodo() 
     {
@@ -35,15 +44,29 @@
         todo.Title = todoInput;
         todos.Add(todo);
         todoInput = "";
+        SaveTodos();
     }
 
     public void RemoveTodo(int index)
     {
         todos.RemoveAt(index);
+        SaveTodos();
     }
 
     public void MarkAsComplete(Todo todo)
     {
         todo.IsComplete = !todo.IsComplete;
+        SaveTodos();
+    }
+
+    public void SaveTodos()
+    {
+        LocalStorage.SetItemAsync(TodoStorageKey, JsonConvert.SerializeObject(todos));
+    }
+
+    private async Task<List<Todo>> GetStoredTodos()
+    {
+        var storedTodos = await LocalStorage.GetItemAsync<string>(TodoStorageKey);
+        return JsonConvert.DeserializeObject<List<Todo>>(storedTodos);
     }
 }
