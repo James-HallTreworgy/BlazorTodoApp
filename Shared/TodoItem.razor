@@ -1,0 +1,31 @@
+@using BlazorTodoApp.Models
+
+<div class="todo-item">
+    <div class="todo-item__text @IsCompleteCss" @onclick="MarkAsComplete">
+        @Todo.Title
+    </div>
+    <div class="todo-item__close" @onclick="@(() => RemoveTodo.InvokeAsync(Index))">&times;</div>
+</div>
+
+@code 
+{
+    [Parameter]
+    public Todo Todo { get; set; }
+
+    [Parameter]
+    public int Index { get; set; }
+
+    [Parameter]
+    public EventCallback<int> RemoveTodo { get; set; }
+
+    [Parameter]
+    public EventCallback SaveTodos { get; set; }
+
+    public string IsCompleteCss => Todo.IsComplete ? "complete" : String.Empty;
+
+    public void MarkAsComplete()
+    {
+        Todo.IsComplete = !Todo.IsComplete;
+        SaveTodos.InvokeAsync(null);
+    }
+}
